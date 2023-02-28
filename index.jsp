@@ -23,7 +23,12 @@
     </header>
     <main>
       <form class="loadForm" action="logs" method="get">
-        <a class="btn btn-lg btn-dark" href="logs?logName=System" name="logName">
+        <a class="btn btn-lg btn-dark" href="CreateUpdateLogsServlet?logName=System" name="logName">
+          Load System Logs
+        </a>
+      </form>
+      <form class="readForm" action="logs" method="get">
+        <a class="btn btn-lg btn-dark" href="logs?page=1" name="logName">
           Read System Logs
         </a>
       </form>

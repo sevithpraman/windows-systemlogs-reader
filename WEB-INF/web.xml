@@ -8,6 +8,15 @@
         <url-pattern>/logs</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>CreateUpdateLogsServlet</servlet-name>
+        <servlet-class>CreateUpdateLogsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CreateUpdateLogsServlet</servlet-name>
+        <url-pattern>/CreateUpdateLogsServlet</url-pattern>
+    </servlet-mapping>
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
