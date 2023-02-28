@@ -25,6 +25,8 @@ public class SystemLogReaderServlet extends HttpServlet {
             out.println("<html>");
             out.println("<head>");
             out.println("<title>System Log Reader</title>");
+            out.println(
+                    "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css'>");
             out.println("<link rel='stylesheet' href='/style.css'>");
             out.println("<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>");
             out.println(
