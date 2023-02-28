@@ -31,41 +31,24 @@ public class CreateUpdateLogsServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            // Set the content type to plain text
-            // response.setContentType("text/plain");
             String logName = request.getParameter("logName");
-            // Create a new PrintWriter object
             PrintWriter out = response.getWriter();
             out.println("<h1>Processing...</h1>");
             System.out.println(logName);
-            // Create a new CreateUpdateLogsServlet object
             CreateUpdateLogsServlet reader = new CreateUpdateLogsServlet();
             SystemLog logs[] = reader.readSystemLog(logName);
-
-            // Convert the array of SystemLog objects to a ArrayList of SystemLog objects
             ArrayList<SystemLog> logList = new ArrayList<SystemLog>(Arrays.asList(logs));
-
-            // print the logs size
             System.out.println("Log size : " + logList.size());
-
-            // print the logs
-
             System.out.println(logList);
 
             for (SystemLog log : logList) {
                 System.out.println(log.getSource() + " " + log.getDescription());
             }
-
-            // jdbc connection
             Class.forName(jdbc_class);
             Connection con = DriverManager.getConnection(url, user, password);
-            // create table logs if not exists
             String sql = "CREATE TABLE IF NOT EXISTS logs (source VARCHAR(255), description VARCHAR(255))";
             PreparedStatement ps = con.prepareStatement(sql);
             ps.executeUpdate();
-
-            // check if the log already exists by checking the source and description, if
-            // exists, skip it
             if (logList != null)
                 for (SystemLog log : logList) {
                     sql = "SELECT * FROM logs WHERE source = ? AND description = ?";
@@ -76,25 +59,15 @@ public class CreateUpdateLogsServlet extends HttpServlet {
                     if (rs.next()) {
                         continue;
                     }
-
-                    // insert the log into the database
                     sql = "INSERT INTO logs (source, description) VALUES (?, ?)";
                     ps = con.prepareStatement(sql);
                     ps.setString(1, log.getSource());
                     ps.setString(2, log.getDescription());
                     ps.executeUpdate();
-                    // count++;
                 }
-
-            // Close the PrintWriter object
             out.close();
-
-            // Close the connection
             con.close();
-
-            out.println("Successfully Retrieved. Redirecting to home page in 2 seconds...");
-            // redirect to home page
-            response.setHeader("Refresh", "2; URL=index.jsp");
+            out.println("Successfully Retrieved. Go back.");
 
         } catch (IOException | ClassNotFoundException | SQLException e) {
             System.out.println("Error: " + e.getMessage());
