@@ -12,6 +12,8 @@
       integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
       crossorigin="anonymous"
     />
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js'></script>
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
     <script
       src="https://kit.fontawesome.com/ef565604ce.js"
       crossorigin="anonymous"
@@ -23,7 +25,7 @@
     </header>
     <main>
       <form class="loadForm" action="logs" method="get">
-        <a class="btn btn-lg btn-dark" href="CreateUpdateLogsServlet?logName=System" name="logName">
+        <a class="btn btn-lg btn-dark" href="CreateUpdateLogsServlet?logName=System" name="logName" onclick="clickAndDisable(this);">
           Load System Logs
         </a>
       </form>
@@ -36,5 +38,13 @@
     <footer>
       <p>By Shravana Tirtha</p>
     </footer>
+    <script>
+      function clickAndDisable(link) {
+     // disable subsequent clicks
+     link.onclick = function(event) {
+        event.preventDefault();
+     }
+   }  
+    </script>
   </body>
 </html>

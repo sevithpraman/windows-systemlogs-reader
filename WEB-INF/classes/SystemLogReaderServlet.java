@@ -25,13 +25,17 @@ public class SystemLogReaderServlet extends HttpServlet {
             out.println("<html>");
             out.println("<head>");
             out.println("<title>System Log Reader</title>");
+            out.println("<link rel='stylesheet' href='../style.css'>");
             out.println(
                     "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css'>");
-            out.println("<link rel='stylesheet' href='/style.css'>");
-            out.println("<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>");
+            out.println(
+                    "<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>");
             out.println(
                     "<script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js'></script>");
-            out.println("<script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js'></script>");
+            out.println(    
+                    "<script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js'></script>");
+            out.println("</head>");
+            
             out.println("</head>");
             out.println("<body>");
             out.println("<h2>System Logs</h2>");
@@ -52,19 +56,48 @@ public class SystemLogReaderServlet extends HttpServlet {
             out.println("<table class='table table-bordered'>");
             out.println("<thead>");
             out.println("<tr>");
+            out.println("<th scope='col'>Event ID</th>");
+            out.println("<th scope='col'>Event Type</th>");
             out.println("<th scope='col'>Source</th>");
+            out.println("<th scope='col'>Category</th>");
+            out.println("<th scope='col'>Time Generated</th>");
             out.println("<th scope='col'>Description</th>");
             out.println("</tr>");
             out.println("</thead>");
             out.println("<tbody>");
             while (rs.next()) {
                 out.println("<tr>");
+                out.println("<td>" + rs.getInt("eventID") + "</td>");
+                out.println("<td>" + rs.getInt("eventType") + "</td>");
                 out.println("<td>" + rs.getString("source") + "</td>");
+                out.println("<td>" + rs.getInt("category") + "</td>");
+                // format time
+                int time = rs.getInt("timeGenerated");
+                int seconds = time % 60;
+                int minutes = (time / 60) % 60;
+                int hours = (time / 3600) % 24;
+                // am/pm
+                String am_pm = "AM";
+                if (hours > 12) {
+                    hours -= 12;
+                    am_pm = "PM";
+                }
+
+                String timeGenerated1 = String.format("%02d:%02d:%02d", hours, minutes, seconds);
+                out.println("<td>" + timeGenerated1 + " " + am_pm + "</td>");
                 out.println("<td>" + rs.getString("description") + "</td>");
                 out.println("</tr>");
+                int eventID = rs.getInt("eventID");
+                int eventType = rs.getInt("eventType");
                 String source = rs.getString("source");
+                int category = rs.getInt("category");
+                int timeGenerated = rs.getInt("timeGenerated");
                 String description = rs.getString("description");
+                log.setEventID(eventID);
+                log.setEventType(eventType);
                 log.setSource(source);
+                log.setCategory(category);
+                log.settimeGenerated(timeGenerated);
                 log.setDescription(description);
                 logList.add(log);
             }

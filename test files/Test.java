@@ -24,7 +24,7 @@ public class Test {
 
         // print the logs
         // for (SystemLog log : logs) {
-        //     System.out.println(log);
+        // System.out.println(log);
         // }
         // Convert the array of SystemLog objects to a ArrayList of SystemLog objects
         ArrayList<SystemLog> logList = new ArrayList<SystemLog>(Arrays.asList(logs));
@@ -33,7 +33,7 @@ public class Test {
             Class.forName(jdbc_class);
             Connection con = DriverManager.getConnection(url, user, password);
             // create table logs if not exists
-            String sql = "CREATE TABLE IF NOT EXISTS logs (source VARCHAR(255), description VARCHAR(255))";
+            String sql = "CREATE TABLE IF NOT EXISTS logs (eventId INT, eventType INT, source VARCHAR(255), category INT, timeGenerated INT, description VARCHAR(255))";
             PreparedStatement ps = con.prepareStatement(sql);
             ps.executeUpdate();
 
@@ -51,10 +51,14 @@ public class Test {
                     }
 
                     // insert the log into the database
-                    sql = "INSERT INTO logs (source, description) VALUES (?, ?)";
+                    sql = "INSERT INTO logs (eventId, eventType, source, category, timeGenerated, description) VALUES (?,?,?,?,?, ?)";
                     ps = con.prepareStatement(sql);
-                    ps.setString(1, log.getSource());
-                    ps.setString(2, log.getDescription());
+                    ps.setInt(1, log.getEventID());
+                    ps.setInt(2, log.getEventType());
+                    ps.setString(3, log.getSource());
+                    ps.setInt(4, log.getCategory());
+                    ps.setInt(5, log.gettimeGenerated());
+                    ps.setString(6, log.getDescription());
                     ps.executeUpdate();
                 }
         } catch (Exception e) {

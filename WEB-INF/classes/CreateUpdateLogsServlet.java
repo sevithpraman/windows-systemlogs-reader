@@ -33,7 +33,13 @@ public class CreateUpdateLogsServlet extends HttpServlet {
         try {
             String logName = request.getParameter("logName");
             PrintWriter out = response.getWriter();
-            out.println("<h1>Processing...</h1>");
+            // disable the user from accessing until the process is complete
+            out.println("<html>");
+            out.println("<head>");
+            out.println("<title>System Log Reader</title>");
+            out.println("<body>");
+            out.println("<h1>System Log Reader</h1>");
+            out.println("<p>Reading the system log. Please wait...</p>");
             System.out.println(logName);
             CreateUpdateLogsServlet reader = new CreateUpdateLogsServlet();
             SystemLog logs[] = reader.readSystemLog(logName);
@@ -46,30 +52,106 @@ public class CreateUpdateLogsServlet extends HttpServlet {
             }
             Class.forName(jdbc_class);
             Connection con = DriverManager.getConnection(url, user, password);
-            String sql = "CREATE TABLE IF NOT EXISTS logs (source VARCHAR(255), description VARCHAR(255))";
+            String sql = "CREATE TABLE IF NOT EXISTS logs (eventId INT, eventType INT, source VARCHAR(255), category INT, timeGenerated INT, description VARCHAR(255))";
             PreparedStatement ps = con.prepareStatement(sql);
             ps.executeUpdate();
-            if (logList != null)
-                for (SystemLog log : logList) {
-                    sql = "SELECT * FROM logs WHERE source = ? AND description = ?";
-                    ps = con.prepareStatement(sql);
-                    ps.setString(1, log.getSource());
-                    ps.setString(2, log.getDescription());
-                    ResultSet rs = ps.executeQuery();
-                    if (rs.next()) {
-                        continue;
-                    }
-                    sql = "INSERT INTO logs (source, description) VALUES (?, ?)";
-                    ps = con.prepareStatement(sql);
-                    ps.setString(1, log.getSource());
-                    ps.setString(2, log.getDescription());
-                    ps.executeUpdate();
-                }
-            out.close();
-            con.close();
-            out.println("Successfully Retrieved. Go back.");
+            // if (logList != null)
+            // for (SystemLog log : logList) {
+            // sql = "SELECT * FROM logs WHERE source = ? AND description = ?";
+            // ps = con.prepareStatement(sql);
+            // ps.setString(1, log.getSource());
+            // ps.setString(2, log.getDescription());
+            // ResultSet rs = ps.executeQuery();
+            // if (rs.next()) {
+            // continue;
+            // }
+            // sql = "INSERT INTO logs (eventId, eventType, source, category, timeGenerated,
+            // description) VALUES (?,?,?,?,?, ?)";
+            // ps = con.prepareStatement(sql);
+            // ps.setInt(1, log.getEventID());
+            // ps.setInt(2, log.getEventType());
+            // ps.setString(3, log.getSource());
+            // ps.setInt(4, log.getCategory());
+            // ps.setInt(5, log.gettimeGenerated());
+            // ps.setString(6, log.getDescription());
+            // ps.executeUpdate();
+            // }
 
-        } catch (IOException | ClassNotFoundException | SQLException e) {
+            // use multiple threads to read the logs and update the database without
+            // duplicating the entries
+            Thread t1 = new Thread() {
+                public void run() {
+                    System.out.println("Thread 1 started");
+                    try {
+                        for (int i = 0; i < logList.size() / 2; i++) {
+                            SystemLog log = logList.get(i);
+                            String sql = "SELECT * FROM logs WHERE source = ? AND description = ?";
+                            PreparedStatement ps = con.prepareStatement(sql);
+                            ps.setString(1, log.getSource());
+                            ps.setString(2, log.getDescription());
+                            ResultSet rs = ps.executeQuery();
+                            if (rs.next()) {
+                                continue;
+                            }
+                            sql = "INSERT INTO logs (eventId, eventType, source, category, timeGenerated, description) VALUES (?,?,?,?,?, ?)";
+                            ps = con.prepareStatement(sql);
+                            ps.setInt(1, log.getEventID());
+                            ps.setInt(2, log.getEventType());
+                            ps.setString(3, log.getSource());
+                            ps.setInt(4, log.getCategory());
+                            ps.setInt(5, log.gettimeGenerated());
+                            ps.setString(6, log.getDescription());
+                            ps.executeUpdate();
+                        }
+                    } catch (SQLException e) {
+                        System.out.println("Error: " + e.getMessage());
+                    }
+                }
+            };
+            Thread t2 = new Thread() {
+                public void run() {
+                    System.out.println("Thread 2 started");
+                    try {
+                        for (int i = logList.size() / 2; i < logList.size(); i++) {
+                            SystemLog log = logList.get(i);
+                            String sql = "SELECT * FROM logs WHERE source = ? AND description = ?";
+                            PreparedStatement ps = con.prepareStatement(sql);
+                            ps.setString(1, log.getSource());
+                            ps.setString(2, log.getDescription());
+                            ResultSet rs = ps.executeQuery();
+                            if (rs.next()) {
+                                continue;
+                            }
+                            sql = "INSERT INTO logs (eventId, eventType, source, category, timeGenerated, description) VALUES (?,?,?,?,?, ?)";
+                            ps = con.prepareStatement(sql);
+                            ps.setInt(1, log.getEventID());
+                            ps.setInt(2, log.getEventType());
+                            ps.setString(3, log.getSource());
+                            ps.setInt(4, log.getCategory());
+                            ps.setInt(5, log.gettimeGenerated());
+                            ps.setString(6, log.getDescription());
+                            ps.executeUpdate();
+                        }
+                    } catch (SQLException e) {
+                        System.out.println("Error: " + e.getMessage());
+                    }
+                }
+            };
+            t1.start();
+            t2.start();
+
+            t1.join();
+            t2.join();
+
+            out.println(
+                    "<p>Reading the system log is complete. <a href='index.jsp'>Click here</a> to go back to the home page.</p>");
+            out.println("</body>");
+            out.println("</html>");
+
+            con.close();
+            out.close();
+
+        } catch (IOException | ClassNotFoundException | SQLException | InterruptedException e) {
             System.out.println("Error: " + e.getMessage());
 
         }

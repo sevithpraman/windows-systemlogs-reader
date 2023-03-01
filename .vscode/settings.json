@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.embeddedhtml": "html",
+        "*.java": "java",
+        "*.js": "javascript",
+        "test.h": "c"
+    }
+}

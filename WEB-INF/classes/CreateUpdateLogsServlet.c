@@ -10,11 +10,13 @@ JNIEXPORT jobjectArray JNICALL Java_CreateUpdateLogsServlet_readSystemLog(JNIEnv
     jclass cls;
     jmethodID constructor;
     jstring jsource, jdescription;
+    jint jeventID, jeventType, jcategory, jtimeGenerated;
     HANDLE hEventLog;
     EVENTLOGRECORD *pevlr;
     DWORD dwBytesRead, dwBytesNeeded;
     char szBuffer[2048];
-    int i = 0, count = sizeof(szBuffer) / sizeof(EVENTLOGRECORD);
+    int i = 0, count = 1000;
+    printf("Count: %d\n", count);
     const char *cLogName = (*env)->GetStringUTFChars(env, logName, NULL);
     if (cLogName == NULL)
     {
@@ -34,7 +36,7 @@ JNIEXPORT jobjectArray JNICALL Java_CreateUpdateLogsServlet_readSystemLog(JNIEnv
         return NULL;
     }
     printf("Class name: %s\n", cls);
-    constructor = (*env)->GetMethodID(env, cls, "<init>", "(Ljava/lang/String;Ljava/lang/String;)V");
+    constructor = (*env)->GetMethodID(env, cls, "<init>", "(IILjava/lang/String;IILjava/lang/String;)V");
     if (constructor == NULL)
     {
         return NULL;
@@ -65,16 +67,40 @@ JNIEXPORT jobjectArray JNICALL Java_CreateUpdateLogsServlet_readSystemLog(JNIEnv
 
         while ((DWORD)((LPBYTE)pevlr - (LPBYTE)szBuffer) < dwBytesRead)
         {
+            printf("----------------------------------------\n");
+            printf("Event ID: %d\n", pevlr->EventID);
+            printf("Event Type: %d\n", pevlr->EventType);
+            printf("Source: %s\n", (LPSTR)((LPBYTE)pevlr + sizeof(EVENTLOGRECORD)));
+            printf("Category: %d\n", pevlr->EventCategory);
+            printf("Time Generated: %d\n", pevlr->TimeGenerated);
+            // printf("Time Written: %d\n", pevlr->TimeWritten);
+            // printf("Record Number: %d\n", pevlr->RecordNumber);
+            printf("Description: %.*s\n", pevlr->StringOffset - sizeof(EVENTLOGRECORD),
+                   (LPSTR)((LPBYTE)pevlr + pevlr->StringOffset));
+            printf("----------------------------------------\n");
+            jeventID = pevlr->EventID;
+            jeventType = pevlr->EventType;
             jsource = (*env)->NewStringUTF(env, (LPSTR)((LPBYTE)pevlr + sizeof(EVENTLOGRECORD)));
+            jcategory = pevlr->EventCategory;
+            jtimeGenerated = pevlr->TimeGenerated;
+            // jrecordNumber = pevlr->RecordNumber;
             jdescription = (*env)->NewStringUTF(env, (LPSTR)((LPBYTE)pevlr + pevlr->StringOffset));
             printf("i: %d\n", i);
-            jobject eventLogRecord = (*env)->NewObject(env, cls, constructor, jsource, jdescription);
+            printf("jeventID: %d\n", jeventID);
+            printf("jeventType: %d\n", jeventType);
+            printf("jsource: %s\n", jsource);
+            printf("jtimeGenerated: %d\n", jtimeGenerated);
+            printf("jcategory: %d\n", jcategory);
+            // printf("jrecordNumber: %d\n", jrecordNumber);
+            printf("jdescription: %s\n", jdescription);
+            jobject eventLogRecord = (*env)->NewObject(env, cls, constructor, jeventID, jeventType, jsource, jcategory, jtimeGenerated, jdescription);
             (*env)->SetObjectArrayElement(env, result, i, eventLogRecord);
             if (i == count - 1)
                 break;
-
+            // delete local references
             (*env)->DeleteLocalRef(env, jsource);
             (*env)->DeleteLocalRef(env, jdescription);
+
             pevlr = (EVENTLOGRECORD *)((LPBYTE)pevlr + pevlr->Length);
             i++;
         }
