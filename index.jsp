@@ -12,8 +12,7 @@
       integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
       crossorigin="anonymous"
     />
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js'></script>
-    <script src='https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js'></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
     <script
       src="https://kit.fontawesome.com/ef565604ce.js"
       crossorigin="anonymous"
@@ -25,12 +24,23 @@
     </header>
     <main>
       <form class="loadForm" action="logs" method="get">
-        <a class="btn btn-lg btn-dark" href="CreateUpdateLogsServlet?logName=System" name="logName" onclick="clickAndDisable(this);">
+        <a
+          id="disableload"
+          class="btn btn-lg btn-dark"
+          href="CreateUpdateLogsServlet?logName=System"
+          name="logName"
+        >
           Load System Logs
         </a>
+        <h3 id="msg" hidden>Processing... Don't refresh the page.</h3>
       </form>
       <form class="readForm" action="logs" method="get">
-        <a class="btn btn-lg btn-dark" href="logs?page=1" name="logName">
+        <a
+          id="disableread"
+          class="btn btn-lg btn-dark"
+          href="logs?page=1"
+          name="logName"
+        >
           Read System Logs
         </a>
       </form>
@@ -39,12 +49,11 @@
       <p>By Shravana Tirtha</p>
     </footer>
     <script>
-      function clickAndDisable(link) {
-     // disable subsequent clicks
-     link.onclick = function(event) {
-        event.preventDefault();
-     }
-   }  
+      $("#disableload").click(function () {
+        $("#disableload").prop("disabled", true);
+        $("#msg").prop("hidden", false);
+        $("#disableread").prop("disabled", true);
+      });
     </script>
   </body>
 </html>

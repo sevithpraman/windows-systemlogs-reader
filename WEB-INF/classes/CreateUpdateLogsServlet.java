@@ -22,63 +22,30 @@ public class CreateUpdateLogsServlet extends HttpServlet {
 
     public native SystemLog[] readSystemLog(String logName);
 
-    // jdbc connectivity variables
     public static String jdbc_class = "com.mysql.cj.jdbc.Driver";
     public static String url = "jdbc:mysql://localhost:3306/systemlogs";
     public static String user = "root";
     public static String password = "";
-    // public static int count;
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             String logName = request.getParameter("logName");
             PrintWriter out = response.getWriter();
-            // disable the user from accessing until the process is complete
             out.println("<html>");
             out.println("<head>");
             out.println("<title>System Log Reader</title>");
             out.println("<body>");
             out.println("<h1>System Log Reader</h1>");
-            out.println("<p>Reading the system log. Please wait...</p>");
             System.out.println(logName);
             CreateUpdateLogsServlet reader = new CreateUpdateLogsServlet();
             SystemLog logs[] = reader.readSystemLog(logName);
             ArrayList<SystemLog> logList = new ArrayList<SystemLog>(Arrays.asList(logs));
             System.out.println("Log size : " + logList.size());
-            System.out.println(logList);
-
-            for (SystemLog log : logList) {
-                System.out.println(log.getSource() + " " + log.getDescription());
-            }
             Class.forName(jdbc_class);
             Connection con = DriverManager.getConnection(url, user, password);
             String sql = "CREATE TABLE IF NOT EXISTS logs (eventId INT, eventType INT, source VARCHAR(255), category INT, timeGenerated INT, description VARCHAR(255))";
             PreparedStatement ps = con.prepareStatement(sql);
             ps.executeUpdate();
-            // if (logList != null)
-            // for (SystemLog log : logList) {
-            // sql = "SELECT * FROM logs WHERE source = ? AND description = ?";
-            // ps = con.prepareStatement(sql);
-            // ps.setString(1, log.getSource());
-            // ps.setString(2, log.getDescription());
-            // ResultSet rs = ps.executeQuery();
-            // if (rs.next()) {
-            // continue;
-            // }
-            // sql = "INSERT INTO logs (eventId, eventType, source, category, timeGenerated,
-            // description) VALUES (?,?,?,?,?, ?)";
-            // ps = con.prepareStatement(sql);
-            // ps.setInt(1, log.getEventID());
-            // ps.setInt(2, log.getEventType());
-            // ps.setString(3, log.getSource());
-            // ps.setInt(4, log.getCategory());
-            // ps.setInt(5, log.gettimeGenerated());
-            // ps.setString(6, log.getDescription());
-            // ps.executeUpdate();
-            // }
-
-            // use multiple threads to read the logs and update the database without
-            // duplicating the entries
             Thread t1 = new Thread() {
                 public void run() {
                     System.out.println("Thread 1 started");
@@ -106,6 +73,7 @@ public class CreateUpdateLogsServlet extends HttpServlet {
                     } catch (SQLException e) {
                         System.out.println("Error: " + e.getMessage());
                     }
+                    System.out.println("Thread 1 ended");
                 }
             };
             Thread t2 = new Thread() {
@@ -135,22 +103,19 @@ public class CreateUpdateLogsServlet extends HttpServlet {
                     } catch (SQLException e) {
                         System.out.println("Error: " + e.getMessage());
                     }
+                    System.out.println("Thread 2 ended");
                 }
             };
             t1.start();
             t2.start();
-
             t1.join();
             t2.join();
-
             out.println(
-                    "<p>Reading the system log is complete. <a href='index.jsp'>Click here</a> to go back to the home page.</p>");
+                    "<h2>Reading the system log is complete. <a href='index.jsp'>Click here</a> to go back to the home page.</h2>");
             out.println("</body>");
             out.println("</html>");
-
             con.close();
             out.close();
-
         } catch (IOException | ClassNotFoundException | SQLException | InterruptedException e) {
             System.out.println("Error: " + e.getMessage());
 
